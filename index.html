@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>Documentation Index</title>
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
+
+	<link type="text/css" rel="stylesheet" href="styles/site.simplex.css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top ">
+<div class="container">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="index.html">Documentation</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+        </button>
+	</div>
+	<div class="navbar-collapse collapse" id="topNavigation">
+		<ul class="nav navbar-nav">
+			
+			<li class="dropdown">
+				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="Tracer.html">Tracer</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="global.html">Global</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="externals.list.html" class="dropdown-toggle" data-toggle="dropdown">Externals<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="external-_opentracing.Span_.html">opentracing.Span</a></li><li><a href="external-_opentracing.SpanContext_.html">opentracing.SpanContext</a></li><li><a href="external-_opentracing.Tracer_.html">opentracing.Tracer</a></li>
+				</ul>
+			</li>
+			
+		</ul>
+        
+            <div class="col-sm-3 col-md-3">
+                <form class="navbar-form" role="search">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
+                        <div class="input-group-btn">
+                            <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        
+	</div>
+
+</div>
+</div>
+
+
+<div class="container" id="toc-content">
+<div class="row">
+
+	
+	<div class="col-md-8">
+	
+		<div id="main">
+			
+
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+
+
+
+
+
+    <section class="readme-section">
+        <article><h1 id="home">Datadog JavaScript Tracer API</h1>
+
+<p>This is the API documentation for the Datadog JavaScript Tracer. If you are just looking to get started, check out the <a href="https://docs.datadoghq.com/tracing/setup/javascript/">tracing setup documentation</a>.</p>
+<h2 id="overview">Overview</h2>
+
+<p>The module exported by this library is an instance of the <a href="./Tracer.html">Tracer</a> class.</p>
+<h2 id="manual-instrumentation">Manual Instrumentation</h2>
+
+<p>If you aren’t using supported library instrumentation (see <a href="#compatibility">Compatibility</a>), you may want to manually instrument your code.</p>
+<p>This can be done using either the <a href="#trace-api">Trace API</a> or <a href="#opentracing-api">OpenTracing</a>.</p>
+<h3 id="trace-api">Trace API</h3>
+
+<p>The following example initializes a Datadog Tracer and creates a Span called <code>web.request</code>:</p>
+<pre class="prettyprint source lang-javascript"><code>const tracer = require('dd-trace').init()
+
+tracer
+  .trace('web.request', {
+    service: 'my_service'
+  })
+  .then(span => {
+    span.setTag('my_tag', 'my_value')
+    span.finish()
+  })</code></pre><p>An important aspect of the Tracer API is that it will automatically propagate context internally. In other words, there is no need to explicitly pass the parent in a child tracer.</p>
+<p>For example:</p>
+<pre class="prettyprint source lang-javascript"><code>const tracer = require('dd-trace').init()
+
+tracer
+  .trace('web.request', {
+    service: 'user-service'
+  })
+  .then(span => {
+    getUsers()
+      .then(() => span.finish())
+  })
+
+function getUsers () {
+  // The span created here is automatically a child of the `web.request` span above.
+  return tracer
+    .trace('db.query', {
+      service: 'user-db'
+    })
+    .then(span => {
+      return User.findAll()
+        .then(users => {
+          span.finish()
+          return users
+        })
+    })
+}</code></pre><h3 id="opentracing-api">OpenTracing API</h3>
+
+<p>This library is OpenTracing compliant. Use the <a href="https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/">OpenTracing API</a> and the Datadog Tracer (dd-trace) library to measure execution times for specific pieces of code. In the following example, a Datadog Tracer is initialized and used as a global tracer:</p>
+<pre class="prettyprint source lang-javascript"><code>const tracer = require('dd-trace').init()
+const opentracing = require('opentracing')
+
+opentracing.initGlobalTracer(tracer)</code></pre><p><strong>NOTE: When using OpenTracing, context propagation is not handled
+automatically.</strong></p>
+<h2 id="integrations">Integrations</h2>
+
+<p>APM provides out-of-the-box instrumentation for many popular frameworks and libraries by using a plugin system. By default all built-in plugins are enabled. This behavior can be changed by setting the <code>plugins</code> option to <code>false</code> in the <a href="#tracer-settings">tracer settings</a>.</p>
+<p>Built-in plugins can be enabled by name and configured individually:</p>
+<pre class="prettyprint source lang-javascript"><code>const tracer = require('dd-trace').init({ plugins: false })
+
+// enable express integration
+tracer.use('express')
+
+// enable and configure postgresql integration
+tracer.use('pg', {
+  service: 'pg-cluster'
+})</code></pre><p>Each integration can be configured individually. See below for more information for every integration.</p>
+<h3 id="express">express</h3>
+
+<h5 id="express-tags">Tags</h5>
+
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>http.url</td>
+<td>The complete URL of the request.</td>
+</tr>
+<tr>
+<td>http.method</td>
+<td>The HTTP method of the request.</td>
+</tr>
+<tr>
+<td>http.status_code</td>
+<td>The HTTP status code of the response.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="express-config">Configuration Options</h5>
+
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>service</td>
+<td><em>Service name of the app</em></td>
+<td>The service name for this integration.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="http">http / https</h3>
+
+<h5 id="http-tags">Tags</h5>
+
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>http.url</td>
+<td>The complete URL of the request.</td>
+</tr>
+<tr>
+<td>http.method</td>
+<td>The HTTP method of the request.</td>
+</tr>
+<tr>
+<td>http.status_code</td>
+<td>The HTTP status code of the response.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="http-config">Configuration Options</h5>
+
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>service</td>
+<td>http-client</td>
+<td>The service name for this integration.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mongodb-core">mongodb-core</h3>
+
+<h5 id="mongodb-core-tags">Tags</h5>
+
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>db.name</td>
+<td>The qualified name of the queried collection.</td>
+</tr>
+<tr>
+<td>out.host</td>
+<td>The host of the MongoDB server.</td>
+</tr>
+<tr>
+<td>out.port</td>
+<td>The port of the MongoDB server.</td>
+</tr>
+<tr>
+<td>mongodb.cursor.index</td>
+<td>When using a cursor, the current index of the cursor.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="mongodb-core-config">Configuration Options</h5>
+
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>service</td>
+<td>mongodb</td>
+<td>The service name for this integration.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mysql">mysql</h3>
+
+<h5 id="mysql-tags">Tags</h5>
+
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>db.name</td>
+<td>The name of the queried database.</td>
+</tr>
+<tr>
+<td>db.user</td>
+<td>The user who made the query.</td>
+</tr>
+<tr>
+<td>out.host</td>
+<td>The host of the MySQL server.</td>
+</tr>
+<tr>
+<td>out.port</td>
+<td>The port of the MySQL server.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="mysql-config">Configuration Options</h5>
+
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>service</td>
+<td>mysql</td>
+<td>The service name for this integration.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mysql2">mysql2</h3>
+
+<h5 id="mysql2-tags">Tags</h5>
+
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>db.name</td>
+<td>The name of the queried database.</td>
+</tr>
+<tr>
+<td>db.user</td>
+<td>The user who made the query.</td>
+</tr>
+<tr>
+<td>out.host</td>
+<td>The host of the MySQL server.</td>
+</tr>
+<tr>
+<td>out.port</td>
+<td>The port of the MySQL server.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="mysql2-config">Configuration Options</h5>
+
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>service</td>
+<td>mysql</td>
+<td>The service name for this integration.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pg">pg</h3>
+
+<h5 id="pg-tags">Tags</h5>
+
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>db.name</td>
+<td>The name of the queried database.</td>
+</tr>
+<tr>
+<td>db.user</td>
+<td>The user who made the query.</td>
+</tr>
+<tr>
+<td>out.host</td>
+<td>The host of the PostgreSQL server.</td>
+</tr>
+<tr>
+<td>out.port</td>
+<td>The port of the PostgreSQL server.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="pg-config">Configuration Options</h5>
+
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>service</td>
+<td>postgres</td>
+<td>The service name for this integration.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="redis">redis</h3>
+
+<h5 id="redis-tags">Tags</h5>
+
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>db.name</td>
+<td>The index of the queried database.</td>
+</tr>
+<tr>
+<td>out.host</td>
+<td>The host of the Redis server.</td>
+</tr>
+<tr>
+<td>out.port</td>
+<td>The port of the Redis server.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="redis-config">Configuration Options</h5>
+
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>service</td>
+<td>redis</td>
+<td>The service name for this integration.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="advanced-configuration">Advanced Configuration</h2>
+
+<h3 id="tracer-settings">Tracer settings</h3>
+
+<p>Options can be configured as a parameter to the <a href="https://datadog.github.io/dd-trace-js/Tracer.html#init__anchor">init()</a> method or as environment variables.</p>
+<table>
+<thead>
+<tr>
+<th>Config</th>
+<th>Environment Variable</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>debug</td>
+<td>DD_TRACE_DEBUG</td>
+<td>false</td>
+<td>Enable debug logging in the tracer.</td>
+</tr>
+<tr>
+<td>service</td>
+<td>DD_SERVICE_NAME</td>
+<td></td>
+<td>The service name to be used for this program.</td>
+</tr>
+<tr>
+<td>hostname</td>
+<td>DD_TRACE_AGENT_HOSTNAME</td>
+<td>localhost</td>
+<td>The address of the trace agent that the tracer will submit to.</td>
+</tr>
+<tr>
+<td>port</td>
+<td>DD_TRACE_AGENT_PORT</td>
+<td>8126</td>
+<td>The port of the trace agent that the tracer will submit to.</td>
+</tr>
+<tr>
+<td>env</td>
+<td>DD_ENV</td>
+<td></td>
+<td>Set an application’s environment e.g. <code>prod</code>, <code>pre-prod</code>, <code>stage</code>.</td>
+</tr>
+<tr>
+<td>tags</td>
+<td></td>
+<td>{}</td>
+<td>Set global tags that should be applied to all spans.</td>
+</tr>
+<tr>
+<td>sampleRate</td>
+<td></td>
+<td>1</td>
+<td>Percentage of spans to sample as a float between 0 and 1.</td>
+</tr>
+<tr>
+<td>flushInterval</td>
+<td></td>
+<td>2000</td>
+<td>Interval in milliseconds at which the tracer will submit traces to the agent.</td>
+</tr>
+<tr>
+<td>experimental</td>
+<td></td>
+<td>{}</td>
+<td>Experimental features can be enabled all at once using boolean <code>true</code> or individually using key/value pairs. Available experimental features: <code>asyncHooks</code>.</td>
+</tr>
+<tr>
+<td>plugins</td>
+<td></td>
+<td>true</td>
+<td>Whether or not to enable automatic instrumentation of external libraries using the built-in plugins.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="custom-logging">Custom Logging</h3>
+
+<p>By default, logging from this library is disabled. In order to get debbuging information and errors sent to logs, the <code>debug</code> options should be set to <code>true</code> in the <a href="https://datadog.github.io/dd-trace-js/Tracer.html#init__anchor">init()</a> method.</p>
+<p>The tracer will then log debug information to <code>console.log()</code> and errors to <code>console.error()</code>. This behavior can be changed by passing a custom logger to the tracer. The logger should contain a <code>debug()</code> and <code>error()</code> methods that can handle messages and errors, respectively.</p>
+<p>For example:</p>
+<pre class="prettyprint source lang-javascript"><code>const bunyan = require('bunyan')
+const logger = bunyan.createLogger({
+  name: 'dd-trace',
+  level: 'debug'
+})
+
+const tracer = require('dd-trace').init({
+  logger: {
+    debug: message => logger.trace(message),
+    error: err => logger.error(err)
+  },
+  debug: true
+})</code></pre></article>
+    </section>
+
+
+
+
+
+
+
+		</div>
+	</div>
+
+	<div class="clearfix"></div>
+
+	
+		<div class="col-md-3">
+			<div id="toc" class="col-md-3 hidden-xs hidden-sm hidden-md"></div>
+		</div>
+	
+
+</div>
+</div>
+
+
+    <div class="modal fade" id="searchResults">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Search results</h4>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div>
+
+
+<footer>
+
+
+<span class="jsdoc-message">
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a>
+	
+		on 2018-05-21T17:25:00+02:00
+	
+	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
+</span>
+</footer>
+
+<script src="scripts/docstrap.lib.js"></script>
+<script src="scripts/toc.js"></script>
+
+    <script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
+
+
+<script>
+$( function () {
+	$( "[id*='$']" ).each( function () {
+		var $this = $( this );
+
+		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+	} );
+
+	$( ".tutorial-section pre, .readme-section pre, pre.prettyprint.source" ).each( function () {
+		var $this = $( this );
+
+		var example = $this.find( "code" );
+		exampleText = example.html();
+		var lang = /{@lang (.*?)}/.exec( exampleText );
+		if ( lang && lang[1] ) {
+			exampleText = exampleText.replace( lang[0], "" );
+			example.html( exampleText );
+			lang = lang[1];
+		} else {
+			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
+			lang = langClassMatch ? langClassMatch[1] : "javascript";
+		}
+
+		if ( lang ) {
+
+			$this
+			.addClass( "sunlight-highlight-" + lang )
+			.addClass( "linenums" )
+			.html( example.html() );
+
+		}
+	} );
+
+	Sunlight.highlightAll( {
+		lineNumbers : false,
+		showMenu : true,
+		enableDoclinks : true
+	} );
+
+	$.catchAnchorLinks( {
+        navbarOffset: 10
+	} );
+	$( "#toc" ).toc( {
+		anchorName  : function ( i, heading, prefix ) {
+			return $( heading ).attr( "id" ) || ( prefix + i );
+		},
+		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
+		showAndHide : false,
+		smoothScrolling: true
+	} );
+
+	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
+	$( '.dropdown-toggle' ).dropdown();
+
+    $( "table" ).each( function () {
+      var $this = $( this );
+      $this.addClass('table');
+    } );
+
+} );
+</script>
+
+
+
+<!--Navigation and Symbol Display-->
+
+
+<!--Google Analytics-->
+
+
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            SearcherDisplay.init();
+        });
+    </script>
+
+
+</body>
+</html>
