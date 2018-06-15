@@ -154,7 +154,13 @@ function getUsers () {
 <pre class="prettyprint source lang-javascript"><code>const tracer = require('dd-trace').init()
 const opentracing = require('opentracing')
 
-opentracing.initGlobalTracer(tracer)</code></pre><p><strong>NOTE: When using OpenTracing, context propagation is not handled
+opentracing.initGlobalTracer(tracer)</code></pre><p>The following tags are available to override Datadog specific options:</p>
+<ul>
+<li><code>service.name</code>: The service name to be used for this span. The service name from the tracer will be used if this is not provided.</li>
+<li><code>resource.name</code>: The resource name to be used for this span. The operation name will be used if this is not provided.</li>
+<li><code>span.type</code>: The span type to be used for this span. Will fallback to <code>custom</code> if not provided.</li>
+</ul>
+<p><strong>NOTE: When using OpenTracing, context propagation is not handled
 automatically.</strong></p>
 <h2 id="integrations">Integrations</h2>
 
@@ -169,6 +175,147 @@ tracer.use('express')
 tracer.use('pg', {
   service: 'pg-cluster'
 })</code></pre><p>Each integration also has its own list of default tags. These tags get automatically added to the span created by the integration.</p>
+<h3 id="amqplib">amqplib</h3>
+
+<h5 id="amqplib-tags">Tags</h5>
+
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>out.host</td>
+<td>The host of the AMQP server.</td>
+</tr>
+<tr>
+<td>out.port</td>
+<td>The port of the AMQP server.</td>
+</tr>
+<tr>
+<td>span.kind</td>
+<td>Set to either <code>producer</code> or <code>consumer</code> where it applies.</td>
+</tr>
+<tr>
+<td>amqp.queue</td>
+<td>The queue targeted by the command (when available).</td>
+</tr>
+<tr>
+<td>amqp.exchange</td>
+<td>The exchange targeted by the command (when available).</td>
+</tr>
+<tr>
+<td>amqp.routingKey</td>
+<td>The routing key targeted by the command (when available).</td>
+</tr>
+<tr>
+<td>amqp.consumerTag</td>
+<td>The consumer tag (when available).</td>
+</tr>
+<tr>
+<td>amqp.source</td>
+<td>The source exchange of the binding (when available).</td>
+</tr>
+<tr>
+<td>amqp.destination</td>
+<td>The destination exchange of the binding (when available).</td>
+</tr>
+</tbody>
+</table>
+<h5 id="amqplib-config">Configuration Options</h5>
+
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>service</td>
+<td><em>Service name of the app</em></td>
+<td>The service name for this integration.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="amqplib-limitations">Known Limitations</h5>
+
+<p>When consuming messages, the current span will be immediately finished. This means that if any asynchronous operation is started in the message handler callback, its duration will be excluded from the span duration.</p>
+<p>For example:</p>
+<pre class="prettyprint source lang-js"><code>channel.consume('queue', msg => {
+  setTimeout(() => {
+    // The message span will not include the 1 second from this operation.
+  }, 1000)
+}, {}, () => {})</code></pre><p>This limitation doesn't apply to other commands. We are working on improving this behavior in a future version.</p>
+<h3 id="elasticsearch">elasticsearch</h3>
+
+<h5 id="elasticsearch-tags">Tags</h5>
+
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>db.type</td>
+<td>Always set to <code>elasticsearch</code>.</td>
+</tr>
+<tr>
+<td>out.host</td>
+<td>The host of the Elasticsearch server.</td>
+</tr>
+<tr>
+<td>out.port</td>
+<td>The port of the Elasticsearch server.</td>
+</tr>
+<tr>
+<td>span.kind</td>
+<td>Always set to <code>client</code>.</td>
+</tr>
+<tr>
+<td>elasticsearch.method</td>
+<td>The underlying HTTP request verb.</td>
+</tr>
+<tr>
+<td>elasticsearch.url</td>
+<td>The underlying HTTP request URL path.</td>
+</tr>
+<tr>
+<td>elasticsearch.body</td>
+<td>The body of the query.</td>
+</tr>
+<tr>
+<td>elasticsearch.params</td>
+<td>The parameters of the query.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="elasticsearch-config">Configuration Options</h5>
+
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>service</td>
+<td>elasticsearch</td>
+<td>The service name for this integration.</td>
+</tr>
+</tbody>
+</table>
 <h3 id="express">express</h3>
 
 <h5 id="express-tags">Tags</h5>
@@ -209,6 +356,54 @@ tracer.use('pg', {
 <tr>
 <td>service</td>
 <td><em>Service name of the app</em></td>
+<td>The service name for this integration.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="graphql">graphql</h3>
+
+<p>The <code>graphql</code> integration uses the operation name as the span resource name. If no operation name is set, the resource name will always be just <code>query</code> or <code>mutation</code>.</p>
+<p>For example:</p>
+<pre class="prettyprint source lang-graphql"><code># good, the resource name will be `query HelloWorld`
+query HelloWorld {
+  hello
+  world
+}
+
+# bad, the resource name will be `query`
+{
+  hello
+  world
+}</code></pre><h5 id="graphql-tags">Tags</h5>
+
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>graphql.document</td>
+<td>The original GraphQL document.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="graphql-config">Configuration Options</h5>
+
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>service</td>
+<td><em>Service name of the app suffixed with -graphql</em></td>
 <td>The service name for this integration.</td>
 </tr>
 </tbody>
@@ -560,7 +755,7 @@ tracer.use('pg', {
 <td>experimental</td>
 <td></td>
 <td>{}</td>
-<td>Experimental features can be enabled all at once using boolean <code>true</code> or individually using key/value pairs. Available experimental features: <code>asyncHooks</code>.</td>
+<td>Experimental features can be enabled all at once using boolean <code>true</code> or individually using key/value pairs. There are currently no experimental features available.</td>
 </tr>
 <tr>
 <td>plugins</td>
@@ -633,7 +828,7 @@ const tracer = require('dd-trace').init({
 <span class="jsdoc-message">
 	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a>
 	
-		on 2018-05-31T10:05:30-04:00
+		on 2018-06-15T13:39:09-04:00
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>
