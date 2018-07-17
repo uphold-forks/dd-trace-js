@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>Documentation External: opentracing.Span</title>
+	<title>Documentation Class: Scope</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -79,14 +79,16 @@
 		<div id="main">
 			
 
-	<h1 class="page-title">External: opentracing.Span</h1>
+	<h1 class="page-title">Class: Scope</h1>
 <section>
 
 <header>
     
         <h2>
-        opentracing.Span
+        Scope
         </h2>
+        
+            <div class="class-description">The Datadog Scope. This is the type returned by ScopeManager.activate().</div>
         
     
 </header>
@@ -96,10 +98,24 @@
     <div class="container-overview">
     
         
-            <div class="description">The base Span class from OpenTracing.</div>
-        
+<hr>
+<dt>
+    <h4 class="name" id="Scope"><span class="type-signature"></span>new Scope()</h4>
+    
+    
+</dt>
+<dd>
 
-        
+    
+
+    
+
+    
+
+    
+    
+
+    
 <dl class="details">
     
 
@@ -134,19 +150,26 @@
 	
 
 	
-	<dt class="tag-see method-doc-label method-doc-details-label">See:</dt>
-	<dd class="tag-see">
-		<ul>
-			<li><a href="https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/class/src/">span.js~Span.html</a></li>
-			</ul>
-	</dd>
-	
 
 	
 </dl>
 
 
-        
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
     
     </div>
 
@@ -162,6 +185,190 @@
 
     
 
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
+            
+<hr>
+<dt>
+    <h4 class="name" id="close"><span class="type-signature"></span>close()</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Close the scope, and finish the span if the scope was created with `finishSpanOnClose` set to true.
+    </div>
+    
+
+    
+
+    
+
+    
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="span"><span class="type-signature"></span>span()</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Get the span wrapped by this scope.
+    </div>
+    
+
+    
+
+    
+
+    
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The wrapped span.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="Scope.html">Scope</a></span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        </dl>
     
 
     

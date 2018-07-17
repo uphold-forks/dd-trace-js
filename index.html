@@ -33,7 +33,7 @@
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Tracer.html">Tracer</a></li>
+					<li><a href="Scope.html">Scope</a></li><li><a href="ScopeManager.html">ScopeManager</a></li><li><a href="Tracer.html">Tracer</a></li>
 				</ul>
 			</li>
 			
@@ -109,46 +109,8 @@
 <h2 id="manual-instrumentation">Manual Instrumentation</h2>
 
 <p>If you aren’t using supported library instrumentation (see <a href="#compatibility">Compatibility</a>), you may want to manually instrument your code.</p>
-<p>This can be done using either the <a href="#trace-api">Trace API</a> or <a href="#opentracing-api">OpenTracing</a>.</p>
-<h3 id="trace-api">Trace API</h3>
-
-<p>The following example initializes a Datadog Tracer and creates a Span called <code>web.request</code>:</p>
-<pre class="prettyprint source lang-javascript"><code>const tracer = require('dd-trace').init()
-
-tracer
-  .trace('web.request', {
-    service: 'my_service'
-  })
-  .then(span => {
-    span.setTag('my_tag', 'my_value')
-    span.finish()
-  })</code></pre><p>An important aspect of the Tracer API is that it will automatically propagate context internally. In other words, there is no need to explicitly pass the parent in a child tracer.</p>
-<p>For example:</p>
-<pre class="prettyprint source lang-javascript"><code>const tracer = require('dd-trace').init()
-
-tracer
-  .trace('web.request', {
-    service: 'user-service'
-  })
-  .then(span => {
-    getUsers()
-      .then(() => span.finish())
-  })
-
-function getUsers () {
-  // The span created here is automatically a child of the `web.request` span above.
-  return tracer
-    .trace('db.query', {
-      service: 'user-db'
-    })
-    .then(span => {
-      return User.findAll()
-        .then(users => {
-          span.finish()
-          return users
-        })
-    })
-}</code></pre><h3 id="opentracing-api">OpenTracing API</h3>
+<p>This can be done using the <a href="#opentracing-api">OpenTracing API</a> and the <a href="#scope-manager">Scope Manager</a>.</p>
+<h3 id="opentracing-api">OpenTracing API</h3>
 
 <p>This library is OpenTracing compliant. Use the <a href="https://doc.esdoc.org/github.com/opentracing/opentracing-javascript/">OpenTracing API</a> and the Datadog Tracer (dd-trace) library to measure execution times for specific pieces of code. In the following example, a Datadog Tracer is initialized and used as a global tracer:</p>
 <pre class="prettyprint source lang-javascript"><code>const tracer = require('dd-trace').init()
@@ -160,8 +122,34 @@ opentracing.initGlobalTracer(tracer)</code></pre><p>The following tags are avail
 <li><code>resource.name</code>: The resource name to be used for this span. The operation name will be used if this is not provided.</li>
 <li><code>span.type</code>: The span type to be used for this span. Will fallback to <code>custom</code> if not provided.</li>
 </ul>
-<p><strong>NOTE: When using OpenTracing, context propagation is not handled
-automatically.</strong></p>
+<h3 id="scope-manager">Scope Manager</h3>
+
+<p>In order to provide context propagation, this library includes a scope manager. A scope is basically a wrapper around a span that can cross both synchronous and asynchronous contexts.</p>
+<p>For example:</p>
+<pre class="prettyprint source lang-javascript"><code>const tracer = require('dd-trace').init({ plugins: false })
+const express = require('express')
+const app = express()
+
+app.use((req, res, next) => {
+  const span = tracer.startSpan('web.request')
+  const scope = tracer.scopeManager().activate(span)
+
+  next()
+})
+
+app.get('/hello', (req, res, next) => {
+  setTimeout(() => {
+    const scope = tracer.scopeManager().active() // the scope activated earlier
+    const span = scope.span() // the span wrapped by the scope
+
+    span.finish()
+    scope.close() // optional as the scope is automatically closed at the end of the current asynchronous context.
+
+    res.status(200).send()
+  }, 100)
+})
+
+app.listen(3000)</code></pre><p>See the <a href="./ScopeManager.html">API documentation</a> for usage.</p>
 <h2 id="integrations">Integrations</h2>
 
 <p>APM provides out-of-the-box instrumentation for many popular frameworks and libraries by using a plugin system. By default all built-in plugins are enabled. This behavior can be changed by setting the <code>plugins</code> option to <code>false</code> in the <a href="#tracer-settings">tracer settings</a>.</p>
@@ -243,15 +231,6 @@ tracer.use('pg', {
 </tr>
 </tbody>
 </table>
-<h5 id="amqplib-limitations">Known Limitations</h5>
-
-<p>When consuming messages, the current span will be immediately finished. This means that if any asynchronous operation is started in the message handler callback, its duration will be excluded from the span duration.</p>
-<p>For example:</p>
-<pre class="prettyprint source lang-js"><code>channel.consume('queue', msg => {
-  setTimeout(() => {
-    // The message span will not include the 1 second from this operation.
-  }, 1000)
-}, {}, () => {})</code></pre><p>This limitation doesn't apply to other commands. We are working on improving this behavior in a future version.</p>
 <h3 id="elasticsearch">elasticsearch</h3>
 
 <h5 id="elasticsearch-tags">Tags</h5>
@@ -833,7 +812,7 @@ const tracer = require('dd-trace').init({
 <span class="jsdoc-message">
 	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a>
 	
-		on 2018-07-17T15:07:29-04:00
+		on 2018-07-17T15:18:09-04:00
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>
