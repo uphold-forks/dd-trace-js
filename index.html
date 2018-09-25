@@ -319,6 +319,10 @@ tracer.use('pg', {
 <td>http.status_code</td>
 <td>The HTTP status code of the response.</td>
 </tr>
+<tr>
+<td>http.headers.*</td>
+<td>A recorded HTTP header.</td>
+</tr>
 </tbody>
 </table>
 <h5 id="express-config">Configuration Options</h5>
@@ -341,6 +345,11 @@ tracer.use('pg', {
 <td>validateStatus</td>
 <td><code>code =&gt; code &lt; 500</code></td>
 <td>Callback function to determine if there was an error. It should take a status code as its only parameter and return <code>true</code> for success or <code>false</code> for errors.</td>
+</tr>
+<tr>
+<td>headers</td>
+<td><code>[]</code></td>
+<td>An array of headers to include in the span metadata.</td>
 </tr>
 </tbody>
 </table>
@@ -372,6 +381,10 @@ query HelloWorld {
 <td>graphql.document</td>
 <td>The original GraphQL document.</td>
 </tr>
+<tr>
+<td>graphql.variables.*</td>
+<td>The variables applied to the document.</td>
+</tr>
 </tbody>
 </table>
 <h5 id="graphql-config">Configuration Options</h5>
@@ -389,6 +402,74 @@ query HelloWorld {
 <td>service</td>
 <td><em>Service name of the app suffixed with -graphql</em></td>
 <td>The service name for this integration.</td>
+</tr>
+<tr>
+<td>variables</td>
+<td><code>undefined</code></td>
+<td>A callback to enable recording of variables. By default, no variables are recorded. For example, using <code>variables =&gt; variables</code> would record all variables.</td>
+</tr>
+<tr>
+<td>depth</td>
+<td>-1</td>
+<td>The maximum depth of fields/resolvers to instrument. Set to <code>0</code> to only instrument the operation or to -1 to instrument all fields/resolvers.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="hapi">hapi</h3>
+
+<h5 id="hapi-tags">Tags</h5>
+
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>http.url</td>
+<td>The complete URL of the request.</td>
+</tr>
+<tr>
+<td>http.method</td>
+<td>The HTTP method of the request.</td>
+</tr>
+<tr>
+<td>http.status_code</td>
+<td>The HTTP status code of the response.</td>
+</tr>
+<tr>
+<td>http.headers.*</td>
+<td>A recorded HTTP header.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="hapi-config">Configuration Options</h5>
+
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>service</td>
+<td><em>Service name of the app</em></td>
+<td>The service name for this integration.</td>
+</tr>
+<tr>
+<td>validateStatus</td>
+<td><code>code =&gt; code &lt; 500</code></td>
+<td>Callback function to determine if there was an error. It should take a status code as its only parameter and return <code>true</code> for success or <code>false</code> for errors.</td>
+</tr>
+<tr>
+<td>headers</td>
+<td><code>[]</code></td>
+<td>An array of headers to include in the span metadata.</td>
 </tr>
 </tbody>
 </table>
@@ -438,6 +519,152 @@ query HelloWorld {
 <td>splitByDomain</td>
 <td>false</td>
 <td>Use the remote endpoint host as the service name instead of the default.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ioredis">ioredis</h3>
+
+<h5 id="ioredis-tags">Tags</h5>
+
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>db.name</td>
+<td>The index of the queried database.</td>
+</tr>
+<tr>
+<td>out.host</td>
+<td>The host of the Redis server.</td>
+</tr>
+<tr>
+<td>out.port</td>
+<td>The port of the Redis server.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="ioredis-config">Configuration Options</h5>
+
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>service</td>
+<td>redis</td>
+<td>The service name for this integration.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="koa">koa</h3>
+
+<h5 id="koa-tags">Tags</h5>
+
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>http.url</td>
+<td>The complete URL of the request.</td>
+</tr>
+<tr>
+<td>http.method</td>
+<td>The HTTP method of the request.</td>
+</tr>
+<tr>
+<td>http.status_code</td>
+<td>The HTTP status code of the response.</td>
+</tr>
+<tr>
+<td>http.headers.*</td>
+<td>A recorded HTTP header.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="koa-config">Configuration Options</h5>
+
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>service</td>
+<td><em>Service name of the app</em></td>
+<td>The service name for this integration.</td>
+</tr>
+<tr>
+<td>validateStatus</td>
+<td><code>code =&gt; code &lt; 500</code></td>
+<td>Callback function to determine if there was an error. It should take a status code as its only parameter and return <code>true</code> for success or <code>false</code> for errors.</td>
+</tr>
+<tr>
+<td>headers</td>
+<td><code>[]</code></td>
+<td>An array of headers to include in the span metadata.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="memcached">memcached</h3>
+
+<h5 id="memcached-tags">Tags</h5>
+
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>memcached.query</td>
+<td>The query sent to the server.</td>
+</tr>
+<tr>
+<td>out.host</td>
+<td>The host of the Memcached server.</td>
+</tr>
+<tr>
+<td>out.port</td>
+<td>The port of the Memcached server.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="memcached-config">Configuration Options</h5>
+
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>service</td>
+<td>memcached</td>
+<td>The service name for this integration.</td>
 </tr>
 </tbody>
 </table>
@@ -677,6 +904,64 @@ query HelloWorld {
 </tr>
 </tbody>
 </table>
+<h3 id="restify">restify</h3>
+
+<h5 id="restify-tags">Tags</h5>
+
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>http.url</td>
+<td>The complete URL of the request.</td>
+</tr>
+<tr>
+<td>http.method</td>
+<td>The HTTP method of the request.</td>
+</tr>
+<tr>
+<td>http.status_code</td>
+<td>The HTTP status code of the response.</td>
+</tr>
+<tr>
+<td>http.headers.*</td>
+<td>A recorded HTTP header.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="restify-config">Configuration Options</h5>
+
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>service</td>
+<td><em>Service name of the app</em></td>
+<td>The service name for this integration.</td>
+</tr>
+<tr>
+<td>validateStatus</td>
+<td><code>code =&gt; code &lt; 500</code></td>
+<td>Callback function to determine if there was an error. It should take a status code as its only parameter and return <code>true</code> for success or <code>false</code> for errors.</td>
+</tr>
+<tr>
+<td>headers</td>
+<td><code>[]</code></td>
+<td>An array of headers to include in the span metadata.</td>
+</tr>
+</tbody>
+</table>
 <h2 id="advanced-configuration">Advanced Configuration</h2>
 
 <h3 id="tracer-settings">Tracer settings</h3>
@@ -692,6 +977,12 @@ query HelloWorld {
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>enabled</td>
+<td>DD_TRACE_ENABLED</td>
+<td>true</td>
+<td>Whether to enable the tracer.</td>
+</tr>
 <tr>
 <td>debug</td>
 <td>DD_TRACE_DEBUG</td>
@@ -817,7 +1108,7 @@ const tracer = require('dd-trace').init({
 <span class="jsdoc-message">
 	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a>
 	
-		on 2018-08-17T13:34:59-04:00
+		on 2018-09-25T18:57:35-04:00
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>
