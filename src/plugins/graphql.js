@@ -267,7 +267,7 @@ function createPathSpan (tracer, config, name, childOf, path) {
   const span = createSpan(tracer, config, name, childOf)
 
   span.addTags({
-    'resource.name': path.join('.')
+    'resource.name': path.map(item => typeof item === 'number' ? '*' : item).join('.')
   })
 
   return span
