@@ -87,10 +87,14 @@ function wrapFields (type, tracer, config, responsePathAsArray) {
     }
 
     if (field.type) {
-      if (field.type._fields) {
-        wrapFields(field.type, tracer, config, responsePathAsArray)
-      } else if (field.type.ofType && field.type.ofType._fields) {
-        wrapFields(field.type.ofType, tracer, config, responsePathAsArray)
+      let unwrappedType = field.type
+
+      while (unwrappedType.ofType) {
+        unwrappedType = unwrappedType.ofType
+      }
+
+      if (unwrappedType._fields) {
+        wrapFields(unwrappedType, tracer, config, responsePathAsArray)
       }
     }
   })
